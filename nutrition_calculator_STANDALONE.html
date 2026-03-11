@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical Nutrition Calculator — Saira Ghaazi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF3E1;--card:#FFFDF5;--border:#D4C9A8;--acc:#8B6914;--acc2:#C4973A;--text:#3A2E1A;--muted:#7A6E56;--green:#4A7C59;--red:#9C3D3D;--blue:#3A6B8A;--sh:0 2px 16px rgba(139,105,20,.10)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Lato',sans-serif;color:var(--text);padding-bottom:60px}
+.header{background:linear-gradient(135deg,#8B6914 0%,#C4973A 60%,#D4B86A 100%);padding:28px 40px 20px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 40px)}
+.header h1{font-family:'Playfair Display',serif;font-size:2.2rem;color:#fff;letter-spacing:1px;position:relative}
+.header p{color:rgba(255,255,255,.85);font-size:.9rem;margin-top:5px;font-weight:300;letter-spacing:2px;text-transform:uppercase;position:relative}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+.sec{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-top:24px;overflow:hidden;box-shadow:var(--sh)}
+.sh{background:linear-gradient(90deg,var(--acc) 0%,var(--acc2) 100%);padding:13px 22px;display:flex;align-items:center;gap:10px}
+.sh h2{font-family:'Playfair Display',serif;color:#fff;font-size:1.1rem;font-weight:600}
+.badge{background:rgba(255,255,255,.25);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0}
+.sb{padding:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr 1fr}}
+.fld label{display:block;font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-family:'Lato',sans-serif;font-size:.93rem;color:var(--text);outline:none;transition:border-color .2s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--acc2);background:#fff}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:11px;margin-top:4px}
+.rc{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:13px 11px;text-align:center}
+.rc .val{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--acc);line-height:1.1}
+.rc .unit{font-size:.7rem;color:var(--muted)}.rc .lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;margin-top:4px}
+.rc.g .val{color:var(--green)}.rc.b .val{color:var(--blue)}.rc.r .val{color:var(--red)}
+.ar{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.ar label{width:78px;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+.ar input[type=range]{flex:1;accent-color:var(--acc2)}
+.apct{width:54px;background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:5px 7px;font-size:.9rem;font-weight:700;color:var(--text);text-align:center;outline:none}
+.atot{text-align:right;font-size:.84rem;margin-bottom:14px}
+.atot span{font-weight:700}
+.atot.ok span{color:var(--green)}.atot.bad span{color:var(--red)}
+.mbr{margin-bottom:9px}.mbl{display:flex;justify-content:space-between;font-size:.79rem;margin-bottom:3px}
+.mbt{background:var(--border);border-radius:4px;height:9px;overflow:hidden}
+.mbf{height:100%;border-radius:4px;transition:width .4s}
+.bcho{background:linear-gradient(90deg,#C4973A,#D4B86A)}.bpro{background:linear-gradient(90deg,#4A7C59,#76B490)}.bfat{background:linear-gradient(90deg,#3A6B8A,#6499B8)}
+
+/* DIET TABLE */
+.dt{width:100%;border-collapse:collapse;font-size:.83rem}
+.dt th{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff;padding:9px 8px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.dt td{border-bottom:1px solid var(--border);padding:9px 8px;vertical-align:top}
+.dt tr:nth-child(even) td{background:rgba(250,243,225,.5)}
+.mn{font-weight:700;color:var(--acc);font-size:.81rem}.tb{display:inline-block;background:var(--acc2);color:#fff;border-radius:4px;padding:2px 6px;font-size:.68rem;font-weight:700;margin-bottom:2px}
+
+/* FOOD TAGS - editable */
+.tag-area{min-height:36px;display:flex;flex-wrap:wrap;gap:3px;align-items:flex-start}
+.tag{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:6px;padding:3px 6px 3px 8px;font-size:.74rem;background:var(--bg);cursor:default;position:relative}
+.tag.c{border-color:#C4973A;color:#7A5000;background:#FFF5E0}
+.tag.p{border-color:#4A7C59;color:#244D35;background:#EFF7F2}
+.tag.f{border-color:#3A6B8A;color:#1A3F57;background:#EEF4F8}
+.tag.x{border-color:#9C3D3D;color:#6B2020;background:#FDF0F0}
+.tag-del{background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--red);opacity:.6;padding:0;line-height:1;flex-shrink:0}
+.tag-del:hover{opacity:1}
+.tag-shuffle{background:none;border:none;cursor:pointer;font-size:.75rem;opacity:.5;padding:0;line-height:1}
+.tag-shuffle:hover{opacity:1}
+.add-tag-btn{display:inline-flex;align-items:center;gap:3px;background:rgba(139,105,20,.08);border:1px dashed var(--acc2);border-radius:6px;padding:3px 8px;font-size:.72rem;color:var(--acc);cursor:pointer;white-space:nowrap}
+.add-tag-btn:hover{background:rgba(139,105,20,.14)}
+
+/* FOOD PICKER MODAL */
+#picker-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+#picker-overlay.open{display:flex}
+#picker-modal{background:var(--card);border-radius:14px;width:540px;max-width:95vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+#picker-head{background:linear-gradient(90deg,var(--acc),var(--acc2));padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+#picker-head h3{font-family:'Playfair Display',serif;color:#fff;font-size:1rem}
+#picker-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+#picker-close:hover{background:rgba(255,255,255,.35)}
+#picker-body{padding:16px;overflow-y:auto;flex:1}
+.picker-cat{margin-bottom:14px}
+.picker-cat-title{font-size:.74rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.7px;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.picker-items{display:flex;flex-wrap:wrap;gap:5px}
+.picker-item{border:1px solid var(--border);border-radius:7px;padding:4px 10px;font-size:.76rem;cursor:pointer;background:var(--bg);color:var(--text);transition:all .15s}
+.picker-item:hover,.picker-item.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+.picker-item.c{border-color:#C4973A}.picker-item.p{border-color:#4A7C59}.picker-item.f{border-color:#3A6B8A}
+
+/* MISC */
+.nb{background:#FFF8E6;border-left:4px solid var(--acc2);border-radius:0 8px 8px 0;padding:11px 15px;font-size:.82rem;color:var(--muted);margin-top:13px;line-height:1.65}
+.br{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.br label{width:158px;font-size:.79rem;color:var(--muted);font-weight:700}
+.bs{font-size:.77rem;font-weight:700;padding:2px 9px;border-radius:20px;min-width:68px;display:inline-block;text-align:center}
+.bn{background:#D4EDDA;color:#2E6B3E}.bh{background:#FADBD8;color:#8B2E2E}.bl{background:#D6EAF8;color:#1A5276}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.bin{width:88px;padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;background:var(--bg);font-family:Lato,sans-serif;font-size:.87rem;outline:none}
+.btn-p{display:block;margin:26px auto 0;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;border-radius:10px;padding:13px 46px;font-family:'Playfair Display',serif;font-size:1.02rem;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(139,105,20,.22);transition:transform .15s}
+.btn-p:hover{transform:translateY(-2px)}
+
+/* PRINT */
+@media print{
+  .btn-p,.add-tag-btn,.tag-del,.tag-shuffle,#picker-overlay{display:none!important}
+  body{background:#fff;font-size:11pt}
+  .sec{box-shadow:none;break-inside:avoid;border:1px solid #ccc;margin-top:16px}
+  .header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sh{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .dt th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{padding:0}
+  .nb{border-left:3px solid #C4973A}
+  .rc .val{font-size:1.2rem}
+  .g3,.g2{gap:10px}
+  #print-summary{display:block!important}
+}
+#print-summary{display:none;background:#FFF8E6;border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-top:18px;font-size:.85rem;line-height:1.8}
+#print-summary h3{font-family:'Playfair Display',serif;font-size:1rem;color:var(--acc);margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<!-- FOOD PICKER MODAL -->
+<div id="picker-overlay">
+  <div id="picker-modal">
+    <div id="picker-head">
+      <h3>📋 Exchange List — Add Food</h3>
+      <button id="picker-close" onclick="closePicker()">✕</button>
+    </div>
+    <div id="picker-body"></div>
+  </div>
+</div>
+
+<div class="header">
+  <h1>Clinical Nutrition Calculator</h1>
+  <p>Saira Ghaazi &nbsp;·&nbsp; Clinical Dietitian</p>
+</div>
+
+<div class="wrap">
+
+<!-- 1. PATIENT INFO -->
+<div class="sec">
+  <div class="sh"><div class="badge">1</div><h2>Patient Information</h2></div>
+  <div class="sb">
+    <div class="g3" style="margin-bottom:14px;">
+      <div class="fld"><label>Patient Name</label><input type="text" id="patName" placeholder="Full Name"></div>
+      <div class="fld"><label>Age (years)</label><input type="number" id="age" placeholder="e.g. 35" oninput="autoCalc()"></div>
+      <div class="fld"><label>Gender</label>
+        <select id="gender" onchange="autoCalc()">
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+    <div class="g3" style="margin-bottom:14px;">
+      <div class="fld"><label>Weight (kg)</label><input type="number" id="weight" placeholder="e.g. 70" step="0.1" oninput="autoCalc()"></div>
+      <div class="fld"><label>Height (cm)</label><input type="number" id="height" placeholder="e.g. 165" step="0.1" oninput="autoCalc()"></div>
+      <div class="fld"><label>Diagnosis / Condition</label>
+        <select id="condition" onchange="autoCalc()">
+          <option value="normal">Normal / Healthy</option>
+          <option value="surgery_minor">Minor Surgery (Post-op)</option>
+          <option value="surgery_major">Major Surgery (Post-op)</option>
+          <option value="fracture">Fracture / Bone Injury</option>
+          <option value="burn">Burns / Severe Trauma</option>
+          <option value="cvd">CVD / Heart Disease</option>
+          <option value="diabetes">Diabetes Mellitus</option>
+          <option value="obesity">Obesity / Overweight</option>
+          <option value="ckd">CKD (Chronic Kidney Disease)</option>
+          <option value="aki">AKI (Acute Kidney Injury)</option>
+          <option value="hepatitis">Hepatitis / CLD</option>
+          <option value="cirrhosis">Cirrhosis (ESLD)</option>
+          <option value="pancreatitis">Pancreatitis (Acute)</option>
+          <option value="copd">COPD (Pulmonary Disease)</option>
+          <option value="hypothyroid">Hypothyroidism</option>
+          <option value="hyperthyroid">Hyperthyroidism</option>
+          <option value="ibs">IBS / Gastritis / GERD</option>
+          <option value="cancer_hcc">Cancer / HCC</option>
+          <option value="cholel">Cholelithiasis (Gallstone)</option>
+          <option value="pregnancy">Pregnancy</option>
+          <option value="lactation">Lactation</option>
+        </select>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="fld"><label>Activity Level</label>
+        <select id="activity" onchange="autoCalc()">
+          <option value="1.0">Bedridden / No Activity (×1.0)</option>
+          <option value="1.2">Slightly Active (×1.2)</option>
+          <option value="1.35">Moderately Active (×1.35)</option>
+          <option value="1.5">Very Active (×1.5)</option>
+          <option value="1.7">Athlete (×1.7)</option>
+        </select>
+      </div>
+      <div class="fld"><label>Stress Factor</label>
+        <select id="stress" onchange="autoCalc()">
+          <option value="1.0">None (×1.0)</option>
+          <option value="1.1">Minor Surgery (×1.1)</option>
+          <option value="1.2">Infection / Fracture (×1.2)</option>
+          <option value="1.3">Major Surgery (×1.3)</option>
+          <option value="1.4">Major Fracture / Trauma (×1.4)</option>
+          <option value="1.6">Sepsis (×1.6)</option>
+          <option value="1.8">Burns (×1.8)</option>
+          <option value="2.0">Severe Burns (×2.0)</option>
+        </select>
+      </div>
+      <div class="fld"><label>Feeding Route</label>
+        <select id="feeding" onchange="updateDietOrder()">
+          <option value="oral">Oral</option>
+          <option value="enteral">Enteral (NG Tube)</option>
+          <option value="parenteral">Parenteral / IV</option>
+        </select>
+      </div>
+    </div>
+    <div id="ckdRow" style="display:none;margin-top:12px;">
+      <div class="fld" style="max-width:250px;"><label>Dialysis Status</label>
+        <select id="dialysis" onchange="autoCalc()">
+          <option value="non">Non-Dialysis</option>
+          <option value="yes">On Dialysis</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. RESULTS -->
+<div class="sec">
+  <div class="sh"><div class="badge">2</div><h2>Anthropometry &amp; Energy Results</h2></div>
+  <div class="sb">
+    <div class="rg">
+      <div class="rc"><div class="val" id="r_bmi">—</div><div class="unit">kg/m²</div><div class="lbl">BMI</div></div>
+      <div class="rc" id="rc_bmicat"><div class="val" id="r_bmi_cat">—</div><div class="unit">&nbsp;</div><div class="lbl">BMI Category</div></div>
+      <div class="rc"><div class="val" id="r_ibw">—</div><div class="unit">kg</div><div class="lbl">IBW</div></div>
+      <div class="rc"><div class="val" id="r_abw">—</div><div class="unit">kg</div><div class="lbl">Adj. BW (ABW)</div></div>
+      <div class="rc b"><div class="val" id="r_fluid">—</div><div class="unit">ml/day</div><div class="lbl">Fluid Req.</div></div>
+      <div class="rc b"><div class="val" id="r_fluid_gl">—</div><div class="unit">glasses</div><div class="lbl">Fluid (glasses)</div></div>
+      <div class="rc g"><div class="val" id="r_bee">—</div><div class="unit">kcal</div><div class="lbl">BEE (H-B)</div></div>
+      <div class="rc g"><div class="val" id="r_tee">—</div><div class="unit">kcal/day</div><div class="lbl">TEE (Total Energy)</div></div>
+    </div>
+    <div class="nb" id="condNote" style="display:none"></div>
+  </div>
+</div>
+
+<!-- 3. AMDR -->
+<div class="sec">
+  <div class="sh"><div class="badge">3</div><h2>AMDR — Macronutrient Distribution</h2></div>
+  <div class="sb">
+    <p style="font-size:.81rem;color:var(--muted);margin-bottom:14px">Adjust sliders until total = 100%. Pre-filled from condition defaults.</p>
+    <div class="ar"><label>🌾 Carbs</label><input type="range" id="sl_cho" min="30" max="70" value="50" oninput="syncA('cho')"><input type="number" class="apct" id="in_cho" value="50" min="0" max="100" oninput="syncA('cho_i')"> %</div>
+    <div class="ar"><label>🥩 Protein</label><input type="range" id="sl_pro" min="10" max="40" value="20" oninput="syncA('pro')"><input type="number" class="apct" id="in_pro" value="20" min="0" max="100" oninput="syncA('pro_i')"> %</div>
+    <div class="ar"><label>🧈 Fat</label><input type="range" id="sl_fat" min="10" max="45" value="30" oninput="syncA('fat')"><input type="number" class="apct" id="in_fat" value="30" min="0" max="100" oninput="syncA('fat_i')"> %</div>
+    <div class="atot ok" id="atot"><span id="atotv">100</span>% total — must equal 100%</div>
+    <div class="rg" style="grid-template-columns:repeat(auto-fill,minmax(148px,1fr));">
+      <div class="rc"><div class="val" id="r_cho_g">—</div><div class="unit">g/day</div><div class="lbl">Carbohydrates</div></div>
+      <div class="rc"><div class="val" id="r_cho_srv">—</div><div class="unit">servings</div><div class="lbl">CHO Exchanges</div></div>
+      <div class="rc g"><div class="val" id="r_pro_g">—</div><div class="unit">g/day</div><div class="lbl">Total Protein</div></div>
+      <div class="rc g"><div class="val" id="r_hvp">—</div><div class="unit">g / exchanges</div><div class="lbl">HVP 60%</div></div>
+      <div class="rc g"><div class="val" id="r_lvp">—</div><div class="unit">g / exchanges</div><div class="lbl">LVP 40%</div></div>
+      <div class="rc b"><div class="val" id="r_fat_g">—</div><div class="unit">g/day</div><div class="lbl">Fat</div></div>
+      <div class="rc b"><div class="val" id="r_fat_srv">—</div><div class="unit">servings</div><div class="lbl">Fat Exchanges</div></div>
+    </div>
+    <div style="margin-top:18px;">
+      <div class="mbr"><div class="mbl"><span style="color:#8B6000;font-weight:700">Carbohydrates</span><span id="bcho_l">50%</span></div><div class="mbt"><div class="mbf bcho" id="bcho" style="width:50%"></div></div></div>
+      <div class="mbr"><div class="mbl"><span style="color:#2E5C3A;font-weight:700">Protein</span><span id="bpro_l">20%</span></div><div class="mbt"><div class="mbf bpro" id="bpro" style="width:20%"></div></div></div>
+      <div class="mbr"><div class="mbl"><span style="color:#1E4A6A;font-weight:700">Fat</span><span id="bfat_l">30%</span></div><div class="mbt"><div class="mbf bfat" id="bfat" style="width:30%"></div></div></div>
+    </div>
+    <div id="carbBox" style="display:none;margin-top:18px;">
+      <div class="divider"></div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:.98rem;margin-bottom:11px;color:var(--acc)">🍽 Carbohydrate Counting (Diabetic)</h3>
+      <div class="rg" style="grid-template-columns:repeat(auto-fill,minmax(128px,1fr));">
+        <div class="rc"><div class="val" id="r_n">—</div><div class="unit">g CHO</div><div class="lbl">n (snack)</div></div>
+        <div class="rc"><div class="val" id="r_2n">—</div><div class="unit">g CHO</div><div class="lbl">2n (main meal)</div></div>
+      </div>
+      <div class="nb">Distribution: Breakfast (2n) · Morning Snack (n) · Lunch (2n) · Afternoon Snack (n) · Dinner (2n) · Bedtime (n)</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. DIET PLAN -->
+<div class="sec">
+  <div class="sh"><div class="badge">4</div><h2>Diet Plan — 9-Meal Schedule</h2></div>
+  <div class="sb">
+    <p style="font-size:.81rem;color:var(--muted);margin-bottom:4px">
+      Click <strong>✕</strong> to remove a food · Click <strong>🔀</strong> to shuffle · Click <strong>+ Add Food</strong> to pick from exchange list
+    </p>
+    <div class="nb" id="dietOrderNote" style="margin-bottom:14px;margin-top:8px;display:none"></div>
+    <div style="overflow-x:auto;">
+      <table class="dt" id="dietT">
+        <thead><tr>
+          <th style="width:120px">Meal</th>
+          <th style="width:68px">Time</th>
+          <th>Food Exchanges <span style="font-weight:400;opacity:.7;font-size:.68rem">(editable)</span></th>
+          <th style="width:72px">~kcal</th>
+          <th style="width:65px">CHO (g)</th>
+          <th style="width:65px">Pro (g)</th>
+          <th style="width:58px">Fat (g)</th>
+        </tr></thead>
+        <tbody id="dietBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px;font-style:italic">Complete patient information above to generate personalised diet plan</td></tr></tbody>
+      </table>
+    </div>
+    <div id="dietTots" style="display:none;margin-top:14px;">
+      <div class="rg" style="grid-template-columns:repeat(4,1fr);">
+        <div class="rc g"><div class="val" id="tot_k">—</div><div class="unit">kcal</div><div class="lbl">Total Energy</div></div>
+        <div class="rc"><div class="val" id="tot_c">—</div><div class="unit">g</div><div class="lbl">Total CHO</div></div>
+        <div class="rc"><div class="val" id="tot_p">—</div><div class="unit">g</div><div class="lbl">Total Protein</div></div>
+        <div class="rc b"><div class="val" id="tot_f">—</div><div class="unit">g</div><div class="lbl">Total Fat</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. BIOCHEMISTRY -->
+<div class="sec">
+  <div class="sh"><div class="badge">5</div><h2>Biochemistry &amp; Lab Values</h2></div>
+  <div class="sb">
+    <div class="g2">
+      <div>
+        <h3 style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:11px">Blood Panel (KFT / CBC)</h3>
+        <div id="bioRows"></div>
+      </div>
+      <div>
+        <h3 style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:11px">Thyroid Panel</h3>
+        <div id="thyRows"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CLINICAL NOTES -->
+<div class="sec">
+  <div class="sh"><div class="badge">6</div><h2>Diet Order &amp; Clinical Notes</h2></div>
+  <div class="sb">
+    <div class="g2">
+      <div class="fld"><label>Diet Order / Type</label>
+        <select id="dietOrder" onchange="updateDietOrder()">
+          <option value="normal">Normal Balanced Diet</option>
+          <option value="clear_liq">Clear Liquid Diet</option>
+          <option value="full_liq">Full Liquid Diet</option>
+          <option value="semi_liq">Semi-Liquid / Blended</option>
+          <option value="soft">Soft Diet</option>
+          <option value="dash">DASH Diet (CVD)</option>
+          <option value="diabetic">Diabetic Exchange Diet</option>
+          <option value="renal">Renal Diet</option>
+          <option value="low_fat">Low Fat Diet</option>
+          <option value="high_pro">High Protein Diet</option>
+          <option value="neutropenic">Neutropenic Diet</option>
+          <option value="brat">BRAT Diet</option>
+          <option value="low_fodmap">Low FODMAP Diet</option>
+          <option value="npo">NPO (Nothing by Mouth)</option>
+          <option value="enteral">Enteral Feeding (NG Tube)</option>
+        </select>
+      </div>
+      <div class="fld"><label>Enteral Formula (if applicable)</label>
+        <select id="formula" onchange="updateDietOrder()">
+          <option value="">N/A — Oral Feeding</option>
+          <option value="ensure">Ensure: 6 scoops/190ml = 285 kcal (NOT for Diabetic)</option>
+          <option value="glucerna">Glucerna: 5 scoops/190ml = 182 kcal (FOR Diabetic)</option>
+          <option value="aminoleban">Aminoleban: 6 scoops/210ml = 210 kcal (CLD/HCC)</option>
+          <option value="bene">Bene Protein: 1 scoop = 43 kcal (Cancer)</option>
+        </select>
+      </div>
+    </div>
+    <div class="fld" style="margin-top:13px;"><label>Clinical Notes / Supplements / Restrictions</label>
+      <textarea id="clinNotes" style="min-height:80px;resize:vertical;" placeholder="e.g. Patient allergic to dairy. On metformin. Supplement: Chromium picolinate 200mcg/day..."></textarea>
+    </div>
+    <div class="nb" id="mntNote">Enter patient information to see MNT recommendations.</div>
+
+    <!-- PRINT SUMMARY (visible only on print) -->
+    <div id="print-summary">
+      <h3>Patient Summary</h3>
+      <div id="print-summary-content"></div>
+    </div>
+  </div>
+</div>
+
+<button class="btn-p" onclick="doPrint()">🖨&nbsp; Print / Save as PDF</button>
+</div><!-- /wrap -->
+
+<script>
+// ==================== EXCHANGE DATA ====================
+var EX={
+ cereal:{label:'🌾 Cereals & Grains',cls:'c',k:100,c:21,p:3,f:0.4,items:[
+  'Whole wheat cereal 30g (1 chapatti 6")', 'Rice 30g (½ cup cooked)', 'Oats 25g (½ cup)',
+  'Millets 30g (½ cup)', 'Bread 40g (1.5 slices)', 'Semolina/Suji 25g (½ cup)',
+  'Cornflakes 28g (5 tsp)', 'Quinoa 30g (½ cup)', 'Vermicelli 30g (½ cup)']},
+ pulse:{label:'🫘 Pulses & Legumes',cls:'p',k:100,c:17,p:7,f:0.5,items:[
+  'Moong dal 30g (½ cup)', 'Chana dal 30g (½ cup)', 'Urad dal 30g (½ cup)',
+  'Red gram dal 30g (½ cup)', 'Lentil whole brown 30g (½ cup)',
+  'Bengal gram whole 30g (½ cup)', 'Horse gram whole 30g (½ cup)']},
+ milk:{label:'🥛 Milk & Dairy',cls:'p',k:110,c:7,p:4.5,f:7,items:[
+  "Cow's milk 150ml (¾ cup)", 'Buffalo milk 100ml (½ cup)',
+  'Curd/Yoghurt 185g (¾ cup)', 'Skimmed milk 100ml (½ cup)',
+  'Paneer 50g']},
+ glv:{label:'🥬 Green Leafy Veg',cls:'c',k:30,c:4.5,p:3,f:1,items:[
+  'Spinach/Palak 100g (¾ cup)', 'Mustard leaves/Sarson 100g (½ cup)',
+  'Mint/Pudina 95g (½ cup)', 'Coriander leaves 110g (½ cup)',
+  'Cabbage greens 120g (½ cup)', 'Amaranth leaves 115g (½ cup)']},
+ roots:{label:'🥕 Roots & Tubers',cls:'c',k:40,c:10,p:1,f:0,items:[
+  'Carrot 100g (¾ cup)', 'Potato 100g (½ cup)', 'Sweet potato 50g (¾ cup)',
+  'Onion 100g (½ cup)', 'Radish 160g (¾ cup)']},
+ otherveg:{label:'🫑 Other Vegetables',cls:'c',k:24,c:4,p:2,f:0,items:[
+  'Tomato', 'Cucumber', 'Broccoli', 'Cauliflower', 'Bell pepper',
+  'Zucchini', 'Eggplant/Brinjal', 'Cabbage', 'Mushrooms', 'Peas ½ cup']},
+ fruit:{label:'🍎 Fruits',cls:'c',k:45,c:10,p:1,f:0,items:[
+  'Apple 75g (½ big)', 'Banana 40g (½ medium)', 'Mango 75g (1 slice)',
+  'Grapes 85g (18-20 pcs)', 'Guava 109g (1 medium)', 'Papaya 217g (4 slices)',
+  'Musk melon 185g (4 slices)', 'Pear 107g (1 medium)', 'Orange 1 small',
+  'Peach 125g (2 medium)']},
+ meat:{label:'🥩 Meat & Poultry',cls:'p',k:70,c:0,p:11,f:3,items:[
+  'Chicken 50g (½ cup cooked)', 'Fish 50g (½ cup cooked)',
+  'Beef/Mutton 65g (½ cup)', 'Egg white 25g (1 large)',
+  'Egg whole 20g (1 small)']},
+ nuts:{label:'🥜 Nuts & Seeds',cls:'f',k:85,c:2,p:3.5,f:7,items:[
+  'Mixed nuts 15g', 'Almonds 6 pcs (15g)', 'Walnuts 4 halves (15g)',
+  'Peanuts 10 pcs (15g)', 'Pumpkin seeds 1 tbsp', 'Flaxseeds 1 tbsp',
+  'Sesame seeds 1 tbsp']},
+ fat:{label:'🧈 Fats & Oils',cls:'f',k:45,c:0,p:0,f:5,items:[
+  'Butter 6g (1 tsp)', 'Ghee 5g (1 tsp)', 'Refined oil 5g (1 tsp)',
+  'Cream 25g (5 tsp)', 'Mayonnaise 6g (1 tsp)', 'Olive oil 5g (1 tsp)']},
+ sugar:{label:'🍯 Sugars',cls:'c',k:20,c:5,p:0,f:0,items:[
+  'Sugar 5g (1 tsp)', 'Jaggery 5g (1 small pc)', 'Honey 5g (1 tsp)', 'Jam 5g (1 tsp)']},
+ soy:{label:'🫘 Soy Products',cls:'p',k:100,c:10,p:15,f:2,items:[
+  'Soy chunks 30g (33 pcs)', 'Soy granules 30g (7 tbsp)', 'Soy milk 200ml (1 pack)']}
+};
+
+// ==================== CONDITION DEFAULTS ====================
+var COND={
+ normal:{cho:50,pro:20,fat:30,note:'Normal balanced diet. AMDR: CHO 45-65%, Protein 15-20%, Fat 20-30%. Protein 0.8g/kg/IBW.'},
+ surgery_minor:{cho:52,pro:18,fat:30,note:'Minor surgery: Clear liquid → Full liquid → Soft → Normal (5 days). Protein 1.1-1.3g/kg. Stress factor 1.1-1.3.'},
+ surgery_major:{cho:52,pro:20,fat:28,note:'Major surgery: NPO pre-op. Post-op Day 1-2 clear liquid, Day 3 full liquid, Day 4 blended, Day 5 normal. IV D5% or Normal Saline. Protein 1.2-1.5g/kg.'},
+ fracture:{cho:50,pro:22,fat:28,note:'Fracture: Protein 1.5-2g/kg for bone healing. Stress factor 1.2-1.4. ↑ Ca, Vit D, Vit C, Zinc. Energy 30-40 kcal/kg.'},
+ burn:{cho:48,pro:25,fat:27,note:'Burns/Trauma: Energy 44-55 kcal/kg. Protein 1.5-2.5g/kg. Vit C, Zinc, Vit A for wound healing. Stress factor 1.6-2.0.'},
+ cvd:{cho:55,pro:25,fat:20,note:'CVD (DASH): Na <1500mg, ↑K (beetroot), ↑Mg, Omega-3 2×/week, CoQ10 with statin, Hibiscus tea (ACE inhibitor effect). Mediterranean diet. ↓LDL ↑HDL.'},
+ diabetes:{cho:50,pro:20,fat:30,note:'Diabetes: Carb counting n/2n. Low GI (50-55). Chromium picolinate, Cinnamon (empty stomach 2hr before), Fenugreek, Moringa. Glucerna for enteral. No refined sugar.'},
+ obesity:{cho:47,pro:23,fat:30,note:'Obesity: 20-25 kcal/kg. Nutrient-dense low-calorie. Metabolic boosters before meals (fennel, cumin, cinnamon, ginger). No carbs at dinner. ACV 1tsp/glass. Garcinia Cambogia.'},
+ ckd:{cho:50,pro:15,fat:35,note:'CKD: Na <1500mg. K=40×BW mg. Phosphorus=17×BW mg. Fluid=UOP+500ml. HBV:LBV=60:40. Non-dialysis 0.5-0.8g/kg; On dialysis 1-2g/kg.'},
+ aki:{cho:55,pro:15,fat:30,note:'AKI: Energy 25-40 kcal/kg. Dialysis protein 1-2g/kg. Non-dialysis 0.5-0.8g/kg. Restrict fluid per urine output.'},
+ hepatitis:{cho:55,pro:20,fat:25,note:'Hepatitis/CLD: High CHO for energy. B-complex supplements. Na <1500mg. Milk Thistle. Monitor bilirubin (normal 0.3-1.3 mg/dL).'},
+ cirrhosis:{cho:52,pro:20,fat:28,note:'Cirrhosis (ESLD): Limited water. ↑Fiber. Na <1500mg. Milk Thistle 1 capsule/day. Protein 1-1.5g/kg. Monitor albumin & prothrombin.'},
+ pancreatitis:{cho:55,pro:20,fat:25,note:'Pancreatitis: Low-moderate fat 50-70g/day. Energy 30-35 kcal/kg. Protein 1.2-1.5g/kg. NG tube if oral not tolerated.'},
+ copd:{cho:40,pro:20,fat:40,note:'COPD: ↓CHO (RQ=1.0 → ↑CO₂ → Hypercapnia). ↑Fat (RQ=0.7). Energy dense. Omega-3, Vit A & D. CHO 40-45%, Fat 30-35%.'},
+ hypothyroid:{cho:50,pro:20,fat:30,note:'Hypothyroid: Energy 20-25 kcal/kg. Protein 0.8g/kg. AVOID goitrogenic foods (broccoli, cauliflower, peanut, cassava). ↑Iodine, Vit A, Omega-3, FA. Thyronine 2hr before meal.'},
+ hyperthyroid:{cho:50,pro:22,fat:28,note:'Hyperthyroid: Energy 40 kcal/kg. Protein 1-1.75g/kg. Vit A, C, B-complex, Omega-3. NO iodine. Goitrogenic foods ALLOWED. T3↑ T4↑ TSH↓.'},
+ ibs:{cho:50,pro:20,fat:30,note:'IBS: Low FODMAP. No lactose, no celiac. AVOID: apples, pears, mango, cherries, watermelon, asparagus. Bland anti-inflammatory soft diet. Low fiber, low fat, moderate CHO & protein.'},
+ cancer_hcc:{cho:52,pro:20,fat:28,note:'HCC/Cancer: Phytochemical-rich diet (coloured foods). 4-5 servings fruit+veg. Berries, nuts, flaxseed. ↑Fluid. Bene Protein enteral. Neutropenic diet if immunocompromised.'},
+ cholel:{cho:50,pro:20,fat:30,note:'Cholelithiasis: HIGH fiber. Moderate carb, moderate protein, LOW fat. Vit E & C (mucolytic). Na <1500mg. Avoid high-fat foods.'},
+ pregnancy:{cho:52,pro:18,fat:30,note:'Pregnancy: 1st tri +0.7g protein. 2nd tri +340kcal +9.6g protein. 3rd tri +450kcal +31.2g protein. Folic acid 400mg, Ca 1600mg, Vit D 400IU. Avoid pineapple & papaya.'},
+ lactation:{cho:52,pro:18,fat:30,note:'Lactation: 1st 6mo +330 kcal. 2nd 6mo +400 kcal. Protein 1.1g/kg. Adequate hydration. Continue prenatal vitamins.'}
+};
+
+// Diet Order notes + food restrictions
+var DIET_ORDER_INFO={
+ normal:{note:'',avoid:[],prefer:[]},
+ clear_liq:{note:'Clear Liquid Diet: Water, clear broth, juice without pulp, tea/coffee without milk, gelatin, clear electrolyte drinks only.',avoid:['cereal','pulse','milk','glv','roots','otherveg','fruit','meat','nuts','fat'],prefer:[]},
+ full_liq:{note:'Full Liquid Diet: All clear liquids + milk, yoghurt, strained soups, puddings, ice cream, smooth cooked cereals.',avoid:['cereal','pulse','glv','roots','otherveg','nuts'],prefer:['milk','fruit']},
+ semi_liq:{note:'Semi-Liquid / Blended Diet: Soft cooked, blended, or mashed foods. No raw vegetables, seeds, or hard foods.',avoid:['nuts'],prefer:['cereal','pulse','milk','glv','roots','fruit']},
+ soft:{note:'Soft Diet: Soft, easy-to-chew foods. Well-cooked vegetables, soft fruits, tender meats. No fried, spicy, or hard foods.',avoid:[],prefer:[]},
+ dash:{note:'DASH Diet: ↑ Fruits, vegetables, whole grains, low-fat dairy, nuts. ↓ Sodium (<1500mg), saturated fat, sugar.',avoid:['sugar','fat'],prefer:['fruit','glv','otherveg','milk','nuts']},
+ diabetic:{note:'Diabetic Exchange Diet: Consistent carbohydrate counting. Distribute CHO evenly across 6 meals. Low GI foods. No sugar/honey.',avoid:['sugar'],prefer:['cereal','pulse','glv','otherveg']},
+ renal:{note:'Renal Diet: Restrict K, Na, Phosphorus, Fluid. Prefer HBV protein (meat, egg). Limit dairy, nuts, bananas.',avoid:['nuts','milk'],prefer:['meat','cereal']},
+ low_fat:{note:'Low Fat Diet: <30% calories from fat. Lean meats, low-fat dairy, steamed/baked foods. Avoid fried foods, butter, ghee.',avoid:['fat','nuts','milk'],prefer:['cereal','pulse','glv','otherveg','fruit']},
+ high_pro:{note:'High Protein Diet: Protein 1.5-2g/kg/BW. Lean meats, eggs, dairy, pulses. Adequate hydration.',avoid:[],prefer:['meat','pulse','milk','nuts']},
+ neutropenic:{note:'Neutropenic Diet: Avoid raw/undercooked foods, unpasteurized products, raw honey, raw nuts. Well-cooked only. Safe spices: turmeric, garlic, oregano.',avoid:['nuts','fruit'],prefer:['cereal','meat','glv','roots']},
+ brat:{note:'BRAT Diet: Banana, Rice, Applesauce, Toast. For gastroenteritis. Also: yoghurt + ispaghol, coconut water, boiled potato.',avoid:['meat','fat','milk','nuts'],prefer:['cereal','fruit','roots']},
+ low_fodmap:{note:'Low FODMAP Diet: Avoid high-FODMAP fruits (apple, pear, mango, cherry, watermelon), lactose, fructose, excess fructans. Suitable: banana, grapes, carrot, rice, oats.',avoid:['milk','sugar'],prefer:['cereal','roots','otherveg','meat']},
+ npo:{note:'NPO — Nothing by Mouth. Patient is fasting. IV fluids (D5% or Normal Saline) only. Record fluid balance.',avoid:['cereal','pulse','milk','glv','roots','otherveg','fruit','meat','nuts','fat','sugar'],prefer:[]},
+ enteral:{note:'Enteral Feeding (NG Tube): 8 feeds/day, 3hr gap (6AM-9AM-12PM-3PM-6PM-9PM-12AM-3AM). 250ml/feed. 30ml water before & after each feed.',avoid:[],prefer:[]}
+};
+
+// ==================== BIOCHEM ====================
+var BIO=[
+ {id:'hb',l:'Hemoglobin (g/dL)',mn:12,mx:17},
+ {id:'wbc',l:'WBC (×10³/µL)',mn:4,mx:11},
+ {id:'neut',l:'Neutrophils (%)',mn:50,mx:70},
+ {id:'lymph',l:'Lymphocytes (%)',mn:20,mx:40},
+ {id:'na',l:'Sodium (mEq/L)',mn:135,mx:145},
+ {id:'k',l:'Potassium (mEq/L)',mn:3.5,mx:5.0},
+ {id:'ca',l:'Calcium (mg/dL)',mn:9.0,mx:10.5},
+ {id:'phos',l:'Phosphorus (mg/dL)',mn:3.0,mx:4.5},
+ {id:'glu',l:'Fasting Glucose (mg/dL)',mn:70,mx:100},
+ {id:'bil',l:'Bilirubin (mg/dL)',mn:0.3,mx:1.3},
+ {id:'alb',l:'Albumin (g/dL)',mn:3.5,mx:5.0}
+];
+var THY=[
+ {id:'tsh',l:'TSH (mIU/L)',mn:0.5,mx:5},
+ {id:'t3',l:'T3 (mg/dL)',mn:70,mx:205},
+ {id:'t4f',l:'T4 Female (mcg/dL)',mn:5,mx:12},
+ {id:'t4m',l:'T4 Male (mcg/dL)',mn:4,mx:12}
+];
+
+function buildBio(){
+ var h='',t='';
+ BIO.forEach(function(p){h+='<div class="br"><label>'+p.l+'</label><input class="bin" type="number" id="b_'+p.id+'" placeholder="—" step="0.01" oninput="chkB(\''+p.id+'\','+p.mn+','+p.mx+')"><span id="bs_'+p.id+'" class="bs"></span></div>';});
+ THY.forEach(function(p){t+='<div class="br"><label>'+p.l+'</label><input class="bin" type="number" id="b_'+p.id+'" placeholder="—" step="0.01" oninput="chkB(\''+p.id+'\','+p.mn+','+p.mx+')"><span id="bs_'+p.id+'" class="bs"></span></div>';});
+ document.getElementById('bioRows').innerHTML=h;
+ document.getElementById('thyRows').innerHTML=t;
+}
+
+function chkB(id,mn,mx){
+ var v=parseFloat(document.getElementById('b_'+id).value);
+ var el=document.getElementById('bs_'+id);
+ if(!el||isNaN(v)){if(el)el.textContent='';return;}
+ if(v<mn){el.className='bs bl';el.textContent='LOW ↓';}
+ else if(v>mx){el.className='bs bh';el.textContent='HIGH ↑';}
+ else{el.className='bs bn';el.textContent='Normal ✓';}
+}
+
+// ==================== MAIN CALC ====================
+var currentTEE=0,currentCond='normal',currentAbw=0;
+
+function autoCalc(){
+ var age=parseFloat(document.getElementById('age').value);
+ var gnd=document.getElementById('gender').value;
+ var wt=parseFloat(document.getElementById('weight').value);
+ var ht=parseFloat(document.getElementById('height').value);
+ var cond=document.getElementById('condition').value;
+ var af=parseFloat(document.getElementById('activity').value);
+ var sf=parseFloat(document.getElementById('stress').value);
+ document.getElementById('ckdRow').style.display=(cond==='ckd'||cond==='aki')?'block':'none';
+ if(!age||!gnd||!wt||!ht)return;
+
+ var htM=ht/100,bmi=wt/(htM*htM);
+ document.getElementById('r_bmi').textContent=bmi.toFixed(1);
+ var bcat='',bcls='';
+ if(bmi<18.5){bcat='Underweight';bcls='r';}else if(bmi<25){bcat='Normal';bcls='g';}else if(bmi<30){bcat='Overweight';}else if(bmi<35){bcat='Obese Class I';bcls='r';}else if(bmi<40){bcat='Obese Class II';bcls='r';}else{bcat='Morbid Obese';bcls='r';}
+ document.getElementById('r_bmi_cat').textContent=bcat;
+ document.getElementById('rc_bmicat').className='rc '+(bcls||'');
+
+ var htIn=ht/2.54,ab=Math.max(0,htIn-60);
+ var ibw=(gnd==='male')?(106+6*ab)/2.2:(100+5*ab)/2.2;
+ document.getElementById('r_ibw').textContent=ibw.toFixed(1);
+ var abw;
+ if(bmi>=25)abw=(wt-ibw)*0.25+ibw;
+ else if(bmi<18.5)abw=0.25*(ibw-wt)+wt;
+ else abw=ibw;
+ document.getElementById('r_abw').textContent=abw.toFixed(1);
+
+ var fl=Math.round(100*10+50*10+20*Math.max(0,wt-20));
+ document.getElementById('r_fluid').textContent=fl;
+ document.getElementById('r_fluid_gl').textContent=(fl/240).toFixed(1);
+
+ var bee;
+ if(gnd==='male')bee=66+(13.7*abw)+(5*ht)-(6.6*age);
+ else bee=655+(9.6*abw)+(1.85*ht)-(4.7*age);
+ document.getElementById('r_bee').textContent=Math.round(bee);
+
+ var tee=bee*sf*af;
+ if(cond==='hypothyroid')tee=22.5*abw;
+ if(cond==='hyperthyroid')tee=40*abw;
+ if(cond==='obesity')tee=22.5*abw;
+ document.getElementById('r_tee').textContent=Math.round(tee);
+
+ currentTEE=tee; currentCond=cond; currentAbw=abw;
+
+ var def=COND[cond]||COND.normal;
+ document.getElementById('sl_cho').value=def.cho;document.getElementById('in_cho').value=def.cho;
+ document.getElementById('sl_pro').value=def.pro;document.getElementById('in_pro').value=def.pro;
+ document.getElementById('sl_fat').value=def.fat;document.getElementById('in_fat').value=def.fat;
+
+ var ne=document.getElementById('condNote');ne.style.display='block';
+ ne.innerHTML='<strong>'+cond.replace(/_/g,' ').toUpperCase()+':</strong> '+def.note;
+ document.getElementById('mntNote').innerHTML='<strong>MNT Recommendations:</strong> '+def.note;
+
+ calcMacros(tee);updBars();buildDiet(tee,cond,abw);updateDietOrder();
+ if(cond==='diabetes'){
+  document.getElementById('carbBox').style.display='block';
+  var cg=parseFloat(document.getElementById('r_cho_g').textContent)||0;
+  document.getElementById('r_n').textContent=(cg/9).toFixed(1);
+  document.getElementById('r_2n').textContent=(cg*2/9).toFixed(1);
+ }else document.getElementById('carbBox').style.display='none';
+}
+
+function calcMacros(tee){
+ var cho=parseInt(document.getElementById('in_cho').value)||0;
+ var pro=parseInt(document.getElementById('in_pro').value)||0;
+ var fat=parseInt(document.getElementById('in_fat').value)||0;
+ var tot=cho+pro+fat;
+ document.getElementById('atotv').textContent=tot;
+ document.getElementById('atot').className='atot '+(tot===100?'ok':'bad');
+ if(!tee)return;
+ var cg=(tee*(cho/100)/4).toFixed(1);
+ var pg=(tee*(pro/100)/4).toFixed(1);
+ var fg=(tee*(fat/100)/9).toFixed(1);
+ document.getElementById('r_cho_g').textContent=cg;
+ document.getElementById('r_cho_srv').textContent=(cg/15).toFixed(1);
+ document.getElementById('r_pro_g').textContent=pg;
+ var hvp=(pg*0.6).toFixed(1),lvp=(pg*0.4).toFixed(1);
+ document.getElementById('r_hvp').textContent=hvp+'g / '+(hvp/7).toFixed(1)+' exc';
+ document.getElementById('r_lvp').textContent=lvp+'g / '+(lvp/7).toFixed(1)+' exc';
+ document.getElementById('r_fat_g').textContent=fg;
+ document.getElementById('r_fat_srv').textContent=(fg/5).toFixed(1);
+}
+
+function syncA(src){
+ if(src==='cho')document.getElementById('in_cho').value=document.getElementById('sl_cho').value;
+ else if(src==='pro')document.getElementById('in_pro').value=document.getElementById('sl_pro').value;
+ else if(src==='fat')document.getElementById('in_fat').value=document.getElementById('sl_fat').value;
+ else if(src==='cho_i')document.getElementById('sl_cho').value=document.getElementById('in_cho').value;
+ else if(src==='pro_i')document.getElementById('sl_pro').value=document.getElementById('in_pro').value;
+ else if(src==='fat_i')document.getElementById('sl_fat').value=document.getElementById('in_fat').value;
+ calcMacros(currentTEE);updBars();
+ if(currentTEE)buildDiet(currentTEE,currentCond,currentAbw);
+}
+
+function updBars(){
+ var c=parseInt(document.getElementById('in_cho').value)||0;
+ var p=parseInt(document.getElementById('in_pro').value)||0;
+ var f=parseInt(document.getElementById('in_fat').value)||0;
+ document.getElementById('bcho').style.width=Math.min(c,100)+'%';
+ document.getElementById('bpro').style.width=Math.min(p,100)+'%';
+ document.getElementById('bfat').style.width=Math.min(f,100)+'%';
+ document.getElementById('bcho_l').textContent=c+'%';
+ document.getElementById('bpro_l').textContent=p+'%';
+ document.getElementById('bfat_l').textContent=f+'%';
+}
+
+// ==================== DIET ORDER ====================
+function updateDietOrder(){
+ var order=document.getElementById('dietOrder').value;
+ var formula=document.getElementById('formula').value;
+ var feeding=document.getElementById('feeding').value;
+ var info=DIET_ORDER_INFO[order]||DIET_ORDER_INFO.normal;
+ var noteEl=document.getElementById('dietOrderNote');
+ var msgs=[];
+ if(info.note)msgs.push(info.note);
+ if(formula==='ensure')msgs.push('🧪 Ensure: 8 feeds × 250ml/day. Mix 6 scoops in 190ml = 285 kcal/feed. NOT for diabetic patients.');
+ else if(formula==='glucerna')msgs.push('🧪 Glucerna: 8 feeds × 250ml/day. Mix 5 scoops in 190ml = 182 kcal/feed. FOR diabetic patients.');
+ else if(formula==='aminoleban')msgs.push('🧪 Aminoleban: 8 feeds × 250ml/day. Mix 6 scoops in 210ml = 210 kcal/feed. For CLD/HCC patients.');
+ else if(formula==='bene')msgs.push('🧪 Bene Protein: 1 scoop = 43 kcal. Mix 2 scoops in 240ml. For cancer/protein-depletion.');
+ if(feeding==='enteral')msgs.push('⏰ Enteral Schedule: 6AM · 9AM · 12PM · 3PM · 6PM · 9PM · 12AM · 3AM (3-hour gaps, 250ml/feed, 30ml water before & after).');
+ if(feeding==='parenteral')msgs.push('💉 Parenteral (IV): D5% Dextrose or Normal Saline (NaCl). Monitor electrolytes, blood glucose, fluid balance daily.');
+ if(msgs.length){noteEl.style.display='block';noteEl.innerHTML=msgs.map(function(m){return m;}).join('<br><br>');}
+ else noteEl.style.display='none';
+ // re-highlight restricted items in diet table
+ highlightRestricted(info.avoid);
+}
+
+function highlightRestricted(avoidList){
+ document.querySelectorAll('.tag').forEach(function(t){
+  var cat=t.getAttribute('data-cat');
+  if(avoidList&&avoidList.indexOf(cat)>=0){
+   t.style.opacity='0.35';t.style.textDecoration='line-through';t.title='Not recommended for this diet order';
+  }else{t.style.opacity='';t.style.textDecoration='';t.title='';}
+ });
+}
+
+// ==================== DIET PLAN BUILDER ====================
+var MEALS=[
+ {n:'Early Morning',  t:'6:00 AM',  cr:0.04,pr:0.04,fr:0.04,tp:'snack'},
+ {n:'Breakfast',      t:'7:30 AM',  cr:0.20,pr:0.18,fr:0.18,tp:'main'},
+ {n:'Mid-Morning',    t:'10:00 AM', cr:0.08,pr:0.07,fr:0.07,tp:'snack'},
+ {n:'Pre-Lunch',      t:'11:30 AM', cr:0.06,pr:0.06,fr:0.06,tp:'snack'},
+ {n:'Lunch',          t:'1:00 PM',  cr:0.22,pr:0.22,fr:0.22,tp:'main'},
+ {n:'Afternoon Snack',t:'4:00 PM',  cr:0.08,pr:0.07,fr:0.07,tp:'snack'},
+ {n:'Dinner',         t:'7:00 PM',  cr:0.20,pr:0.20,fr:0.20,tp:'main'},
+ {n:'Post-Dinner',    t:'8:30 PM',  cr:0.06,pr:0.08,fr:0.08,tp:'snack'},
+ {n:'Bedtime Snack',  t:'9:30 PM',  cr:0.06,pr:0.08,fr:0.08,tp:'snack'}
+];
+
+function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+// mealTags stores tags per row: {rowIdx: [{label,cat,cls},...]}
+var mealTags={};
+
+function initTagsForRow(ri,mc,mp,mf,cond,tp){
+ var tags=[];
+ var isIBS=cond==='ibs',isRen=cond==='ckd'||cond==='aki',isCOPD=cond==='copd',isDiab=cond==='diabetes',isCVD=cond==='cvd';
+ var orderInfo=DIET_ORDER_INFO[document.getElementById('dietOrder').value]||DIET_ORDER_INFO.normal;
+ var avoid=orderInfo.avoid||[];
+
+ function ok(cat){return avoid.indexOf(cat)<0;}
+
+ if(mc>8&&ok('cereal'))tags.push({label:'🌾 '+rnd(EX.cereal.items),cat:'cereal',cls:'c'});
+ if(mc>15&&!isIBS&&ok('fruit'))tags.push({label:'🍎 '+rnd(EX.fruit.items),cat:'fruit',cls:'c'});
+ if(tp==='main'&&ok('glv')&&!isIBS)tags.push({label:'🥬 '+rnd(EX.glv.items),cat:'glv',cls:'c'});
+ if(tp==='main'&&ok('roots'))tags.push({label:'🥕 '+rnd(EX.roots.items),cat:'roots',cls:'c'});
+ if(tp==='main'&&ok('otherveg'))tags.push({label:'🫑 '+rnd(EX.otherveg.items),cat:'otherveg',cls:'c'});
+ if(mp>6){
+  if(isRen&&ok('meat'))tags.push({label:'🥩 '+rnd(EX.meat.items),cat:'meat',cls:'p'});
+  else if(ok('meat')&&Math.random()>0.4)tags.push({label:'🥩 '+rnd(EX.meat.items),cat:'meat',cls:'p'});
+  else if(ok('pulse'))tags.push({label:'🫘 '+rnd(EX.pulse.items),cat:'pulse',cls:'p'});
+ }
+ if(mp>10&&!isRen&&ok('milk'))tags.push({label:'🥛 '+rnd(EX.milk.items),cat:'milk',cls:'p'});
+ if(mf>4&&ok('fat'))tags.push({label:'🧈 '+rnd(EX.fat.items),cat:'fat',cls:'f'});
+ if(tp==='snack'&&mc<10&&ok('nuts'))tags.push({label:'🥜 '+rnd(EX.nuts.items),cat:'nuts',cls:'f'});
+ if(isDiab)tags.push({label:'🌿 Cinnamon water (empty stomach)',cat:'_',cls:'x'});
+ if(isCOPD&&tp==='main')tags.push({label:'🐟 Fish/Omega-3 (preferred)',cat:'meat',cls:'p'});
+ if(isCVD&&tp==='main')tags.push({label:'🫐 Berries+Walnuts (Omega-3)',cat:'nuts',cls:'f'});
+ mealTags[ri]=tags;
+}
+
+function renderTagArea(ri){
+ var tags=mealTags[ri]||[];
+ var order=document.getElementById('dietOrder').value;
+ var avoid=(DIET_ORDER_INFO[order]||{}).avoid||[];
+ var html='<div class="tag-area" id="ta_'+ri+'">';
+ tags.forEach(function(t,ti){
+  var restricted=t.cat!=='_'&&avoid.indexOf(t.cat)>=0;
+  html+='<span class="tag '+t.cls+(restricted?' x':'')+'" data-cat="'+t.cat+'" data-ri="'+ri+'" data-ti="'+ti+'" title="'+(restricted?'Not recommended for this diet order':'')+'" style="'+(restricted?'opacity:.38;text-decoration:line-through;':'')+'">';
+  html+=t.label;
+  html+='<button class="tag-shuffle" onclick="shuffleTag('+ri+','+ti+')" title="Shuffle this food">🔀</button>';
+  html+='<button class="tag-del" onclick="removeTag('+ri+','+ti+')" title="Remove">✕</button>';
+  html+='</span>';
+ });
+ html+='<button class="add-tag-btn" onclick="openPicker('+ri+')">+ Add Food</button>';
+ html+='</div>';
+ return html;
+}
+
+function removeTag(ri,ti){
+ if(mealTags[ri])mealTags[ri].splice(ti,1);
+ var td=document.getElementById('ta_'+ri);
+ if(td)td.parentElement.innerHTML=renderTagArea(ri);
+}
+
+function shuffleTag(ri,ti){
+ var t=mealTags[ri]&&mealTags[ri][ti];
+ if(!t)return;
+ var cat=t.cat;
+ if(cat==='_'){return;}
+ if(EX[cat]){
+  var items=EX[cat].items;
+  var cur=t.label.replace(/^[^\s]+\s/,'');
+  var others=items.filter(function(x){return x!==cur;});
+  var pick=others.length?rnd(others):rnd(items);
+  var emoji=t.label.match(/^[^\s]+/)[0];
+  t.label=emoji+' '+pick;
+ }
+ var ta=document.getElementById('ta_'+ri);
+ if(ta)ta.parentElement.innerHTML=renderTagArea(ri);
+}
+
+// ==================== FOOD PICKER ====================
+var pickerTarget=-1;
+
+function openPicker(ri){
+ pickerTarget=ri;
+ var body=document.getElementById('picker-body');
+ var html='';
+ Object.keys(EX).forEach(function(cat){
+  var ex=EX[cat];
+  html+='<div class="picker-cat"><div class="picker-cat-title">'+ex.label+'</div><div class="picker-items">';
+  ex.items.forEach(function(item){
+   html+='<div class="picker-item '+ex.cls+'" onclick="addTagFromPicker(\''+cat+'\',\''+item.replace(/'/g,"\\'")+'\')" title="Click to add">'+item+'</div>';
+  });
+  html+='</div></div>';
+ });
+ body.innerHTML=html;
+ document.getElementById('picker-overlay').classList.add('open');
+}
+
+function addTagFromPicker(cat,item){
+ if(pickerTarget<0)return;
+ var ex=EX[cat];
+ var emoji={cereal:'🌾',pulse:'🫘',milk:'🥛',glv:'🥬',roots:'🥕',otherveg:'🫑',fruit:'🍎',meat:'🥩',nuts:'🥜',fat:'🧈',sugar:'🍯',soy:'🫘'};
+ if(!mealTags[pickerTarget])mealTags[pickerTarget]=[];
+ mealTags[pickerTarget].push({label:(emoji[cat]||'🍽')+' '+item,cat:cat,cls:ex.cls});
+ var ta=document.getElementById('ta_'+pickerTarget);
+ if(ta)ta.parentElement.innerHTML=renderTagArea(pickerTarget);
+ closePicker();
+}
+
+function closePicker(){
+ document.getElementById('picker-overlay').classList.remove('open');
+ pickerTarget=-1;
+}
+document.getElementById('picker-overlay').addEventListener('click',function(e){if(e.target===this)closePicker();});
+
+// ==================== BUILD DIET TABLE ====================
+function buildDiet(tee,cond,abw){
+ var cg=parseFloat(document.getElementById('r_cho_g').textContent)||0;
+ var pg=parseFloat(document.getElementById('r_pro_g').textContent)||0;
+ var fg=parseFloat(document.getElementById('r_fat_g').textContent)||0;
+ if(!tee||!cg)return;
+ mealTags={};
+ var rows='',tk=0,tc=0,tpv=0,tf=0;
+ MEALS.forEach(function(m,ri){
+  var mc=cg*m.cr,mp=pg*m.pr,mf=fg*m.fr;
+  var mk=mc*4+mp*4+mf*9;
+  tk+=mk;tc+=mc;tpv+=mp;tf+=mf;
+  initTagsForRow(ri,mc,mp,mf,cond,m.tp);
+  rows+='<tr>';
+  rows+='<td><div class="mn">'+m.n+'</div><div class="tb">'+m.t+'</div></td>';
+  rows+='<td style="font-size:.77rem;color:var(--muted)">'+(m.tp==='main'?'Main Meal':'Snack')+'</td>';
+  rows+='<td id="cell_'+ri+'">'+renderTagArea(ri)+'</td>';
+  rows+='<td style="font-weight:700;color:var(--acc)">'+Math.round(mk)+'</td>';
+  rows+='<td>'+mc.toFixed(1)+'</td>';
+  rows+='<td>'+mp.toFixed(1)+'</td>';
+  rows+='<td>'+mf.toFixed(1)+'</td>';
+  rows+='</tr>';
+ });
+ document.getElementById('dietBody').innerHTML=rows;
+ document.getElementById('dietTots').style.display='block';
+ document.getElementById('tot_k').textContent=Math.round(tk);
+ document.getElementById('tot_c').textContent=tc.toFixed(1);
+ document.getElementById('tot_p').textContent=tpv.toFixed(1);
+ document.getElementById('tot_f').textContent=tf.toFixed(1);
+}
+
+// ==================== PRINT ====================
+function doPrint(){
+ // Build print summary
+ var pat=document.getElementById('patName').value||'—';
+ var age=document.getElementById('age').value||'—';
+ var gnd=document.getElementById('gender').value||'—';
+ var cond=document.getElementById('condition').value;
+ var order=document.getElementById('dietOrder').selectedOptions[0].text;
+ var formula=document.getElementById('formula').selectedOptions[0].text;
+ var notes=document.getElementById('clinNotes').value||'None';
+ var tee=document.getElementById('r_tee').textContent;
+ var bmi=document.getElementById('r_bmi').textContent;
+ var ibw=document.getElementById('r_ibw').textContent;
+ var fluid=document.getElementById('r_fluid').textContent;
+ var choG=document.getElementById('r_cho_g').textContent;
+ var proG=document.getElementById('r_pro_g').textContent;
+ var fatG=document.getElementById('r_fat_g').textContent;
+ var feeding=document.getElementById('feeding').value;
+ var mntDef=COND[cond]||COND.normal;
+ var d=new Date();
+ var dateStr=d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+
+ document.getElementById('print-summary-content').innerHTML=
+  '<strong>Patient:</strong> '+pat+' &nbsp;|&nbsp; <strong>Age:</strong> '+age+' yrs &nbsp;|&nbsp; <strong>Gender:</strong> '+gnd+' &nbsp;|&nbsp; <strong>Date:</strong> '+dateStr+'<br>'+
+  '<strong>Diagnosis:</strong> '+cond.replace(/_/g,' ').toUpperCase()+' &nbsp;|&nbsp; <strong>Feeding Route:</strong> '+feeding+'<br>'+
+  '<strong>BMI:</strong> '+bmi+' kg/m² &nbsp;|&nbsp; <strong>IBW:</strong> '+ibw+' kg &nbsp;|&nbsp; <strong>Fluid:</strong> '+fluid+' ml/day<br>'+
+  '<strong>TEE:</strong> '+tee+' kcal/day &nbsp;|&nbsp; <strong>CHO:</strong> '+choG+'g &nbsp;|&nbsp; <strong>Protein:</strong> '+proG+'g &nbsp;|&nbsp; <strong>Fat:</strong> '+fatG+'g<br>'+
+  '<strong>Diet Order:</strong> '+order+' &nbsp;|&nbsp; <strong>Formula:</strong> '+formula+'<br>'+
+  '<strong>MNT Notes:</strong> '+mntDef.note+'<br>'+
+  '<strong>Clinical Notes:</strong> '+notes;
+ window.print();
+}
+
+buildBio();
+</script>
+</body>
+</html>
